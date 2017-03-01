@@ -10,10 +10,13 @@ exports.db = {
 }
 const ROOT = process.cwd();
 exports.path = {
-    ROOT: ROOT,
+    ROOT_PATH: ROOT,
+    APP_PATH: path.resolve(ROOT, 'app'),
     CONFIG_PATH: path.resolve(ROOT, 'app/config'),
-    CONTROLLER_PATH: path.resolve(ROOT, 'app/controller'),
-    MODEL_PATH: path.resolve(ROOT, 'app/controller'),
-    VIEW_PATH: path.resolve(ROOT, 'app/view'),
-    PUBLIC_PATH: path.resolve(ROOT, 'public')
+    HOME_PATH: path.resolve(ROOT,'app/home'),
+    MODEL_PATH: path.resolve(ROOT, 'app/model'),
+    CORE_PATH: path.resolve(ROOT, 'framework/core'),
+    DATABASE_PATH: path.resolve(ROOT, 'framework/database'),
+    HELPER_PATH: path.resolve(ROOT, 'framework/helper'),
+    PUBLIC_PATH: path.resolve(ROOT, 'public'),
 }

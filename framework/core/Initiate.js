@@ -1,9 +1,17 @@
-let express = require('express');
-let path = require('path')
-let config = require(path.resolve(process.cwd(), 'app/config/config'))
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+const S = require('string');
+const session = require('express-session');
+const cookie = require('cookie-parser');
+const bodyParser = require('body-parser');
 
-let app = express()
-// app.set('view', './app/view');
+let config = require(path.resolve(process.cwd(), 'app/config/config'));
+
+
+let app = express();
+app.listen(8082);
+
 module.exports = class Initiate {
     constructor() {
 
@@ -11,26 +19,68 @@ module.exports = class Initiate {
 
     static run(){
         this.defineGlobalVar();
-        this.init();
+        this.initMiddleware();
+        this.routerDispatch();
     }
 
-    static init(){
-        app.use(express.static(GLOBALPATH.PUBLIC_PATH));
+    static initMiddleware(){
+        // app.use(express.static(GLOBALPATH.PUBLIC_PATH));
+        // 加载 bodyparser, 处理 post 数据
+        app.use(bodyParser.urlencoded({extended: true}));
+        // 跨域访问
+        app.use(cors({
+            origin: true,
+            credentials: true
+        }));
+        // app.use((req, res, next)=>{
+        //     res.header("Access-Control-Allow-Origin", req.headers.origin);
+        //     res.header("Access-Control-Allow-Headers", "X-Requested-With");
+        //     res.header("Access-Control-Allow-Credentials", true);
+        //     res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+        //     res.header("X-Powered-By",' 3.2.1')
+        //     res.header("Content-Type", "application/json;charset=utf-8");
+        //     next();
+        // });
 
-        app.all('/:p?/:c?/:a?', (req, res)=>{
+        // about handlesession
+        app.use(session({
+            secret: "flowke'blog",
+            proxy: true,
+            resave: true,
+            saveUninitialized: true
+        }));
+        app.use( (req, res, next)=>{
+            next();
+        } );
+    }
 
-            let {p, c, a} = req.params;
-            c = c || 'index';
-            a = a || 'index';
-            p = p || 'home';
+    static routerDispatch(){
+        app.get('*',(req, res)=>{
 
-            let controllerClass = require(path.resolve(GLOBALPATH.CONTROLLER_PATH, p,`${c}Controller.js`));
+            res.sendFile(path.resolve(GLOBALPATH.ROOT_PATH, 'index.html'));
+            return;
 
-            let controller = new controllerClass();
-            controller[`${a}Action`].apply(null, [req,res]);
         } );
 
-        app.listen(8082);
+        app.post('/:p/:c/:a', (req, res)=>{
+            let {p, c, a} = req.params;
+
+            if(!p || !c || !a){
+                res.end();
+                return;
+            }
+
+            let controllerPath = path.resolve(GLOBALPATH.APP_PATH, p, 'controller', S(c).capitalize().s+ 'Controller.js');
+            let Controller = null;
+            try{
+                Controller = require(controllerPath);
+            }catch(e){
+                res.end();
+                return;
+            }
+            let controller = new Controller();
+            controller[`${a}Action`].apply(null, [req,res]);
+        } );
 
     }
 

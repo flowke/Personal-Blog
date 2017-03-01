@@ -1,11 +1,9 @@
-
+const path = require('path');
 const mysql = require('mysql');
 
-
 module.exports = class Mysql{
-    constructor(){
-        let config = require(path.resolve(GLOBALPATH.CONFIG_PATH,'config.js'));
-        const conn = this.conn = mysql.createConnection({...config.db});
+    constructor(config){
+        const conn = this.conn = mysql.createConnection(config);
         conn.connect( (err)=>{
             if(err){
                 console.error('error connecting: ' + err.stack);
@@ -13,9 +11,12 @@ module.exports = class Mysql{
             }
         } );
     }
-
+    /**
+     * cb 会接收的参数 err, ret, field
+     * @type {[type]}
+     */
     query(sql, data=null, cb=()=>{}){
-        return this.conn.query($sql, data, (err,ret, fields)=>{
+        this.conn.query(sql, data, (err,ret, fields)=>{
             cb(err, ret, fields);
         });
     }

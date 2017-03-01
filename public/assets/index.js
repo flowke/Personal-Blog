@@ -71,15 +71,19 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _index = __webpack_require__(4);
+	var _config = __webpack_require__(4);
+	
+	var _config2 = _interopRequireDefault(_config);
+	
+	var _index = __webpack_require__(5);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
-	var _nav = __webpack_require__(6);
+	var _nav = __webpack_require__(7);
 	
 	var _nav2 = _interopRequireDefault(_nav);
 	
-	var _info = __webpack_require__(8);
+	var _info = __webpack_require__(9);
 	
 	var _info2 = _interopRequireDefault(_info);
 	
@@ -91,28 +95,15 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	__webpack_require__(12);
-	__webpack_require__(14);
-	__webpack_require__(20);
+	__webpack_require__(16);
+	__webpack_require__(18);
+	__webpack_require__(24);
 	
 	
 	var navProps = {
 	    brandUrl: './img/curly-brackets.png'
 	};
-	
-	var infoData = [{
-	    id: '1',
-	    title: '非豆科绿肥',
-	    user: 'flowke',
-	    time: 'fdlkfslk',
-	    read: 30,
-	    comment: 89,
-	    like: 77
-	}];
-	
-	for (var i = 0; i < 40; i++) {
-	    infoData.push(infoData[0]);
-	}
+	$.ajaxSetup({ dataType: 'json' });
 	
 	var Index = function (_React$Component) {
 	    _inherits(Index, _React$Component);
@@ -123,19 +114,105 @@
 	        var _this = _possibleConstructorReturn(this, (Index.__proto__ || Object.getPrototypeOf(Index)).call(this, props));
 	
 	        _this.state = {
-	            infoType: 'inbox',
-	            infoData: infoData
+	            whichPanel: 'home',
+	            hasLogin: false
 	        };
+	
+	        _this.changeInfoPanel = _this.changeInfoPanel.bind(_this);
+	        _this.changeLoginState = _this.changeLoginState.bind(_this);
+	        _this.handleUserLogin = _this.handleUserLogin.bind(_this);
+	
 	        return _this;
 	    }
+	    // 修改显示哪个 infopanel
+	
 	
 	    _createClass(Index, [{
+	        key: 'changeInfoPanel',
+	        value: function changeInfoPanel(token) {
+	            this.setState({ whichPanel: token });
+	        }
+	    }, {
+	        key: 'changeLoginState',
+	        value: function changeLoginState(token) {
+	            this.setState({ hasLogin: token });
+	        }
+	    }, {
+	        key: 'handleUserLogin',
+	        value: function handleUserLogin(isLogin, data, cb) {
+	            var _this2 = this;
+	
+	            var username = data.username,
+	                passw = data.passw,
+	                cfpassw = data.cfpassw;
+	
+	            if (isLogin) {
+	                $.post({
+	                    url: _config2.default.url + '/home/user/login',
+	                    context: this,
+	                    data: { username: username, passw: passw },
+	                    dataType: 'json'
+	                }).done(function (data) {
+	                    var code = data.code,
+	                        msg = data.msg;
+	
+	                    console.log(data);
+	                    if (code === 0) {
+	                        _this2.changeInfoPanel('home');
+	                        _this2.setState({ hasLogin: true });
+	                    }
+	                    cb(data);
+	                }).fail(function (err) {
+	                    console.log(err);
+	                });
+	            } else {
+	
+	                $.post({
+	                    url: _config2.default.url + '/home/user/signin',
+	                    context: this,
+	                    data: { username: username, passw: passw, cfpassw: cfpassw },
+	                    dataType: 'json'
+	                }).done(function (data) {
+	                    cb(data);
+	                }).fail(function (err) {
+	                    console.log(err);
+	                });
+	            }
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var _this3 = this;
+	
+	            $.post(_config2.default.url + '/home/user/autoLog').done(function (data) {
+	                var code = data.code;
+	
+	                if (code === 0) {
+	                    _this3.setState({ hasLogin: true });
+	                }
+	            });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var _state = this.state,
-	                infoType = _state.infoType,
-	                infoData = _state.infoData;
+	                whichPanel = _state.whichPanel,
+	                hasLogin = _state.hasLogin;
 	
+	            var changeInfoPanel = this.changeInfoPanel,
+	                changeLoginState = this.changeLoginState,
+	                handleUserLogin = this.handleUserLogin;
+	            var navProps = {
+	                hasLogin: hasLogin,
+	                changeInfoPanel: changeInfoPanel,
+	                whichPanel: whichPanel,
+	                changeLoginState: changeLoginState
+	            };
+	            var infoProps = {
+	                changeInfoPanel: changeInfoPanel,
+	                whichPanel: whichPanel,
+	                handleUserLogin: handleUserLogin
+	            };
 	
 	            return React.createElement(
 	                'div',
@@ -144,7 +221,7 @@
 	                React.createElement(
 	                    'div',
 	                    { className: 'container-fluid ' + _index2.default.bd },
-	                    React.createElement(_info2.default, { token: infoType, data: infoData })
+	                    React.createElement(_info2.default, infoProps)
 	                )
 	            );
 	        }
@@ -178,12 +255,20 @@
 /* 4 */
 /***/ function(module, exports) {
 
+	module.exports = {
+		"url": "http://blog.com:8083"
+	};
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
 	// removed by extract-text-webpack-plugin
 	module.exports = {"wrap":"wrap_1MO2HSzRJb","bd":"bd_3vw_vb_LHA"};
 
 /***/ },
-/* 5 */,
-/* 6 */
+/* 6 */,
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(React) {'use strict';
@@ -196,7 +281,7 @@
 	
 	var _react = __webpack_require__(1);
 	
-	var _nav = __webpack_require__(7);
+	var _nav = __webpack_require__(8);
 	
 	var _nav2 = _interopRequireDefault(_nav);
 	
@@ -208,42 +293,109 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var propTypes = {
-	    brandUrl: _react.PropTypes.string.isRequired
-	};
+	var propTypes = {};
 	
 	var Nav = function (_Component) {
 	    _inherits(Nav, _Component);
 	
-	    function Nav() {
+	    function Nav(props) {
 	        _classCallCheck(this, Nav);
 	
-	        return _possibleConstructorReturn(this, (Nav.__proto__ || Object.getPrototypeOf(Nav)).apply(this, arguments));
+	        return _possibleConstructorReturn(this, (Nav.__proto__ || Object.getPrototypeOf(Nav)).call(this, props));
 	    }
 	
 	    _createClass(Nav, [{
+	        key: 'navBarClick',
+	        value: function navBarClick(token, ev) {
+	            ev.stopPropagation();
+	            ev.preventDefault();
+	
+	            this.props.changeInfoPanel(token);
+	        }
+	    }, {
+	        key: 'userEntryClick',
+	        value: function userEntryClick() {
+	            var _props = this.props,
+	                hasLogin = _props.hasLogin,
+	                changeLoginState = _props.changeLoginState,
+	                changeInfoPanel = _props.changeInfoPanel;
+	
+	            if (hasLogin) {
+	                console.log('logOut');
+	                changeInfoPanel('home');
+	                changeLoginState(false);
+	            } else {
+	                changeInfoPanel('userEntry');
+	            }
+	        }
+	    }, {
+	        key: 'componentWillUpdate',
+	        value: function componentWillUpdate() {}
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            $('[data-toggle="tooltip"]').tooltip();
+	        }
+	    }, {
+	        key: 'componentUillUnmount',
+	        value: function componentUillUnmount() {
+	            $('[data-toggle="tooltip"]').off();
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var brandUrl = this.props.brandUrl;
+	            var _props2 = this.props,
+	                hasLogin = _props2.hasLogin,
+	                whichPanel = _props2.whichPanel;
+	            var active = _nav2.default.active,
+	                userAct = _nav2.default.userAct;
 	
+	            console.log(hasLogin);
 	            return React.createElement(
 	                'nav',
 	                { className: 'navbar navbar-default navbar-fixed-top ' + _nav2.default.nav, role: 'navigation' },
-	                React.createElement(
-	                    'a',
-	                    { href: '#', className: 'navbar-brand ' + _nav2.default.brand },
-	                    'F'
-	                ),
 	                React.createElement(
 	                    'div',
 	                    { className: 'collapse navbar-collapse navbar-left ' + _nav2.default.collection1, id: 'bs-example-navbar-collapse-1' },
 	                    React.createElement(
 	                        'ul',
-	                        { className: 'nav navbar-nav  ' + _nav2.default.navList },
+	                        { className: 'nav navbar-nav  ' + _nav2.default.navList + ' ' + _nav2.default.top + ' ' },
 	                        React.createElement(
 	                            'li',
-	                            null,
+	                            { className: whichPanel === 'home' ? active : '',
+	                                onClick: this.navBarClick.bind(this, 'home') },
+	                            React.createElement(
+	                                'span',
+	                                { href: '#', className: _nav2.default.brand + ' ' },
+	                                'F'
+	                            )
+	                        ),
+	                        React.createElement(
+	                            'li',
+	                            {
+	                                className: whichPanel === 'inbox' ? active : '',
+	                                onClick: this.navBarClick.bind(this, 'inbox'),
+	                                'data-toggle': 'tooltip',
+	                                'data-placement': 'right',
+	                                title: 'Inbox',
+	                                ref: 'inbox' },
 	                            React.createElement('span', { className: 'glyphicon glyphicon-inbox' })
+	                        )
+	                    ),
+	                    React.createElement(
+	                        'ul',
+	                        { className: 'nav navbar-nav ' + _nav2.default.navList + ' ' + _nav2.default.bottom },
+	                        React.createElement(
+	                            'li',
+	                            {
+	                                className: whichPanel === 'userEntry' ? userAct : '',
+	                                onClick: this.userEntryClick.bind(this),
+	                                'data-toggle': 'tooltip',
+	                                'data-placement': 'right',
+	                                'data-original-title': hasLogin ? '注销' : '登录',
+	                                ref: 'login' },
+	                            React.createElement('span', {
+	                                className: 'glyphicon ' + (hasLogin ? 'glyphicon-log-in' : 'glyphicon-user') })
 	                        )
 	                    )
 	                )
@@ -261,68 +413,11 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
-	module.exports = {"nav":"nav_BPA5fUgHUr","brand":"brand_1X_3mH3b60","collection1":"collection1_M1TmsNEgHc","navList":"navList_21LJA0KxyX"};
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(React) {'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _inbox = __webpack_require__(9);
-	
-	var _inbox2 = _interopRequireDefault(_inbox);
-	
-	var _info = __webpack_require__(11);
-	
-	var _info2 = _interopRequireDefault(_info);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	// 此组件是容器组件
-	exports.default = function (_ref) {
-	    var token = _ref.token,
-	        data = _ref.data;
-	
-	
-	    var component = null;
-	    var tit = '';
-	    switch (token) {
-	        case 'inbox':
-	            component = data.map(function (elt, indx) {
-	                return React.createElement(_inbox2.default, { key: indx, data: elt });
-	            });
-	            tit = 'Inbox';
-	            break;
-	    }
-	    return React.createElement(
-	        'section',
-	        { className: 'col-lg-4 ' + _info2.default.section },
-	        React.createElement(
-	            'header',
-	            { className: '' + _info2.default.header },
-	            React.createElement(
-	                'h2',
-	                { className: 'page-header' },
-	                tit
-	            )
-	        ),
-	        React.createElement(
-	            'div',
-	            { className: '' + _info2.default.wrap },
-	            component
-	        )
-	    );
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+	module.exports = {"nav":"nav_BPA5fUgHUr","brand":"brand_1X_3mH3b60","collection1":"collection1_M1TmsNEgHc","navList":"navList_21LJA0KxyX","top":"top_1oN2mw6n29","bottom":"bottom_2lnplM0o2T","active":"active_iF5-UUMUaB","userAct":"userAct_HH1nuHwcjm"};
 
 /***/ },
 /* 9 */
@@ -334,7 +429,146 @@
 	    value: true
 	});
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _config = __webpack_require__(4);
+	
+	var _config2 = _interopRequireDefault(_config);
+	
 	var _inbox = __webpack_require__(10);
+	
+	var _inbox2 = _interopRequireDefault(_inbox);
+	
+	var _userEntry = __webpack_require__(12);
+	
+	var _userEntry2 = _interopRequireDefault(_userEntry);
+	
+	var _info = __webpack_require__(15);
+	
+	var _info2 = _interopRequireDefault(_info);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // 此组件是容器组件
+	
+	
+	var infoData = [{
+	    id: '1',
+	    title: '非豆科绿肥',
+	    user: 'flowke',
+	    time: 'fdlkfslk',
+	    read: 30,
+	    comment: 89,
+	    like: 77
+	}];
+	for (var i = 0; i < 40; i++) {
+	    infoData.push(infoData[0]);
+	}
+	
+	var Info = function (_React$Component) {
+	    _inherits(Info, _React$Component);
+	
+	    function Info(props) {
+	        _classCallCheck(this, Info);
+	
+	        var _this = _possibleConstructorReturn(this, (Info.__proto__ || Object.getPrototypeOf(Info)).call(this, props));
+	
+	        _this.state = {
+	            inboxData: infoData,
+	            entryData: {
+	                isLogin: true
+	            }
+	        };
+	
+	        _this.changeUserEntry = _this.changeUserEntry.bind(_this);
+	        return _this;
+	    }
+	    // 登陆还是注册
+	
+	
+	    _createClass(Info, [{
+	        key: 'changeUserEntry',
+	        value: function changeUserEntry(token) {
+	            var entryData = this.state.entryData;
+	
+	            entryData.isLogin = token;
+	            this.setState({ entryData: entryData });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var _props = this.props,
+	                whichPanel = _props.whichPanel,
+	                changeLoginState = _props.changeLoginState,
+	                changeInfoPanel = _props.changeInfoPanel,
+	                handleUserLogin = _props.handleUserLogin;
+	            var _state = this.state,
+	                inboxData = _state.inboxData,
+	                entryData = _state.entryData;
+	
+	            var component = null;
+	            var tit = '';
+	            switch (whichPanel) {
+	                case 'home':
+	                    break;
+	                case 'inbox':
+	                    component = inboxData.map(function (elt, indx) {
+	                        return React.createElement(_inbox2.default, { key: indx, data: elt });
+	                    });
+	                    tit = 'Inbox';
+	                    break;
+	                case 'userEntry':
+	                    component = React.createElement(_userEntry2.default, {
+	                        isLogin: entryData.isLogin,
+	                        changePanel: this.changeUserEntry,
+	                        changeLoginState: changeLoginState,
+	                        changeInfoPanel: changeInfoPanel,
+	                        handleUserLogin: handleUserLogin
+	                    });
+	                    tit = entryData.isLogin ? '登陆' : '注册';
+	            };
+	            return React.createElement(
+	                'section',
+	                { className: 'col-lg-4 ' + _info2.default.section },
+	                React.createElement(
+	                    'header',
+	                    { className: '' + _info2.default.header },
+	                    React.createElement(
+	                        'h2',
+	                        { className: 'page-header' },
+	                        tit
+	                    )
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { className: '' + _info2.default.wrap },
+	                    component
+	                )
+	            );
+	        }
+	    }]);
+	
+	    return Info;
+	}(React.Component);
+	
+	exports.default = Info;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(React) {'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _inbox = __webpack_require__(11);
 	
 	var _inbox2 = _interopRequireDefault(_inbox);
 	
@@ -383,27 +617,617 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 	module.exports = {"section":"section_1DaZP5mGFD","title":"title_1i7LXOasJQ"};
 
 /***/ },
-/* 11 */
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(React) {'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _validation = __webpack_require__(13);
+	
+	var _validation2 = _interopRequireDefault(_validation);
+	
+	var _config = __webpack_require__(4);
+	
+	var _config2 = _interopRequireDefault(_config);
+	
+	var _userEntry = __webpack_require__(14);
+	
+	var _userEntry2 = _interopRequireDefault(_userEntry);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var initState = {
+	    hintState: {
+	        username: '',
+	        passw: '',
+	        cfpassw: ''
+	    },
+	    value: {
+	        username: '',
+	        passw: '',
+	        cfpassw: ''
+	    },
+	    wrongMsg: {
+	        username: false,
+	        passw: false,
+	        cfpassw: false
+	    }
+	};
+	
+	var UserEntry = function (_React$Component) {
+	    _inherits(UserEntry, _React$Component);
+	
+	    function UserEntry(props) {
+	        _classCallCheck(this, UserEntry);
+	
+	        var _this = _possibleConstructorReturn(this, (UserEntry.__proto__ || Object.getPrototypeOf(UserEntry)).call(this, props));
+	
+	        _this.state = Object.assign({}, initState);
+	
+	        _this.validator = new _validation2.default();
+	
+	        _this.changePanel = _this.changePanel.bind(_this);
+	        _this.validValue = _this.validValue.bind(_this);
+	        _this.handleSubmit = _this.handleSubmit.bind(_this);
+	
+	        return _this;
+	    }
+	    // 到底是注册还是登陆
+	
+	
+	    _createClass(UserEntry, [{
+	        key: 'changePanel',
+	        value: function changePanel(token, ev) {
+	
+	            ev.stopPropagation();
+	            ev.preventDefault();
+	
+	            this.setState({
+	                hintState: {
+	                    username: '',
+	                    passw: '',
+	                    cfpassw: ''
+	                },
+	                value: {
+	                    username: '',
+	                    passw: '',
+	                    cfpassw: ''
+	                },
+	                wrongMsg: {
+	                    username: false,
+	                    passw: false,
+	                    cfpassw: false
+	                }
+	            });
+	            this.props.changePanel(token);
+	        }
+	    }, {
+	        key: 'handleSubmit',
+	        value: function handleSubmit(ev) {
+	            var _this2 = this;
+	
+	            ev.stopPropagation();
+	            ev.preventDefault();
+	            var _props = this.props,
+	                isLogin = _props.isLogin,
+	                handleUserLogin = _props.handleUserLogin;
+	            var _state$value = this.state.value,
+	                username = _state$value.username,
+	                passw = _state$value.passw,
+	                cfpassw = _state$value.cfpassw;
+	
+	            var wrongMsg = {},
+	                hintState = {};
+	            var canSubmit = true;
+	
+	            this.validator.valiByValue({
+	                username: username,
+	                passw: passw
+	            }, function (name, msg) {
+	                wrongMsg[name] = msg;
+	                hintState[name] = 'has-error';
+	                canSubmit = false;
+	            });
+	
+	            if (!isLogin && passw !== cfpassw) {
+	                wrongMsg.cfpassw = "密码不一致";
+	                hintState.cfpassw = 'has-error';
+	                canSubmit = false;
+	            }
+	
+	            this.setState({
+	                wrongMsg: wrongMsg,
+	                hintState: hintState
+	            });
+	
+	            if (canSubmit) {
+	                handleUserLogin(isLogin, { username: username, passw: passw, cfpassw: cfpassw }, function (_ref) {
+	                    var code = _ref.code,
+	                        msg = _ref.msg;
+	
+	                    if (isLogin) {
+	                        if (code === 1) {
+	                            wrongMsg.username = msg;
+	                            hintState.username = 'has-error';
+	                        } else if (code === 2) {
+	                            wrongMsg.passw = msg;
+	                            hintState.passw = 'has-error';
+	                        }
+	                        if (code !== 0) {
+	                            _this2.setState({ wrongMsg: wrongMsg, hintState: hintState });
+	                        }
+	                    } else {
+	                        if (code === 1) {
+	                            wrongMsg.username = "用户名已存在";
+	                            hintState.username = 'has-error';
+	                        } else if (code === 0) {
+	                            _this2.props.changePanel(true);
+	                        }
+	                        _this2.setState({ wrongMsg: wrongMsg, hintState: hintState });
+	                    }
+	                });
+	            }
+	        }
+	
+	        //提交前的前端验证提示
+	
+	    }, {
+	        key: 'validValue',
+	        value: function validValue(token, ev) {
+	            var _state = this.state,
+	                value = _state.value,
+	                hintState = _state.hintState,
+	                wrongMsg = _state.wrongMsg;
+	            var isLogin = this.props.isLogin;
+	
+	
+	            var curtVal = value[token] = ev.target.value;
+	            wrongMsg[token] = '';
+	            hintState[token] = '';
+	            if (token !== 'cfpassw') {
+	
+	                this.validator.valiOneByValue(token, curtVal, function (msg) {
+	                    hintState[token] = 'has-error';
+	                    wrongMsg[token] = msg;
+	                });
+	            }
+	
+	            this.setState({ hintState: hintState, wrongMsg: wrongMsg });
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var isLogin = this.props.isLogin;
+	
+	
+	            this.validator.addByValue('username', [{ strategy: 'isEmpty', errorMsg: '用户名不能为空' }, { strategy: 'hasSpace', errorMsg: '不能有空格' }, { strategy: 'isNumberHead', errorMsg: '不能数字开头' }, { strategy: 'mustAllW', errorMsg: '用户名只能由字母,数字,下划线( _ )组成' }, { strategy: 'maxLength:16', errorMsg: '不能超过12位' }]);
+	            this.validator.addByValue('passw', [{ strategy: 'isEmpty', errorMsg: '密码不能为空' }, { strategy: 'hasSpace', errorMsg: '不能有空格' }]);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var _props2 = this.props,
+	                isLogin = _props2.isLogin,
+	                handleLogin = _props2.handleLogin;
+	            var _state2 = this.state,
+	                hintState = _state2.hintState,
+	                value = _state2.value,
+	                wrongMsg = _state2.wrongMsg;
+	
+	            var cfPasswComponent = null;
+	            if (!isLogin) {
+	                cfPasswComponent = React.createElement(
+	                    'div',
+	                    { className: 'form-group ' + hintState.cfpassw },
+	                    React.createElement(
+	                        'div',
+	                        { className: 'input-group input-group-lg' },
+	                        React.createElement(
+	                            'div',
+	                            { className: 'input-group-addon' },
+	                            React.createElement('span', { className: 'glyphicon glyphicon-lock' })
+	                        ),
+	                        React.createElement('input', {
+	                            type: 'password',
+	                            onChange: this.validValue.bind(this, 'cfpassw'),
+	                            className: 'form-control', name: 'cfPassw',
+	                            placeholder: 'Confirm password',
+	                            value: value.cfpassw
+	                        })
+	                    ),
+	                    wrongMsg.cfpassw ? React.createElement(
+	                        'span',
+	                        { className: 'help-block' },
+	                        wrongMsg.cfpassw
+	                    ) : ""
+	                );
+	            };
+	            return React.createElement(
+	                'section',
+	                { className: '' + _userEntry2.default.section },
+	                React.createElement(
+	                    'header',
+	                    { className: '' + _userEntry2.default.header },
+	                    React.createElement(
+	                        'span',
+	                        { className: isLogin ? 'text-primary' : 'text-muted', onClick: this.changePanel.bind(this, true) },
+	                        ' \u767B\u9646 '
+	                    ),
+	                    '\xB7',
+	                    React.createElement(
+	                        'span',
+	                        { className: isLogin ? 'text-muted' : 'text-primary', onClick: this.changePanel.bind(this, false) },
+	                        ' \u6CE8\u518C '
+	                    )
+	                ),
+	                React.createElement(
+	                    'div',
+	                    null,
+	                    React.createElement(
+	                        'form',
+	                        { className: _userEntry2.default.form, onSubmit: this.handleSubmit, role: 'form' },
+	                        React.createElement(
+	                            'div',
+	                            { className: 'form-group ' + hintState.username },
+	                            React.createElement(
+	                                'div',
+	                                { className: 'input-group input-group-lg' },
+	                                React.createElement(
+	                                    'div',
+	                                    { className: 'input-group-addon' },
+	                                    React.createElement('span', { className: 'glyphicon glyphicon-user' })
+	                                ),
+	                                React.createElement('input', { type: 'text',
+	                                    onChange: this.validValue.bind(this, 'username'),
+	                                    className: 'form-control',
+	                                    id: 'username',
+	                                    name: 'username',
+	                                    placeholder: 'username',
+	                                    value: value.username
+	                                })
+	                            ),
+	                            wrongMsg.username ? React.createElement(
+	                                'span',
+	                                { className: 'help-block' },
+	                                wrongMsg.username
+	                            ) : ""
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'form-group ' + hintState.passw },
+	                            React.createElement(
+	                                'div',
+	                                { className: 'input-group input-group-lg' },
+	                                React.createElement(
+	                                    'div',
+	                                    { className: 'input-group-addon' },
+	                                    React.createElement('span', { className: 'glyphicon glyphicon-lock' })
+	                                ),
+	                                React.createElement('input', {
+	                                    type: 'password',
+	                                    onChange: this.validValue.bind(this, 'passw'),
+	                                    className: 'form-control',
+	                                    placeholder: 'password',
+	                                    name: 'passw',
+	                                    value: value.passw
+	                                })
+	                            ),
+	                            wrongMsg.passw ? React.createElement(
+	                                'span',
+	                                { className: 'help-block' },
+	                                wrongMsg.passw
+	                            ) : ""
+	                        ),
+	                        cfPasswComponent,
+	                        React.createElement(
+	                            'div',
+	                            { className: 'form-group' },
+	                            React.createElement(
+	                                'button',
+	                                {
+	                                    type: 'submit',
+	                                    className: 'btn btn-success btn-lg btn-block' },
+	                                isLogin ? 'Login' : 'Sign in'
+	                            )
+	                        )
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+	
+	    return UserEntry;
+	}(React.Component);
+	
+	exports.default = UserEntry;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	// 表单的策略类, 定义了所有的验证算法, 他们不会主动调用, 而是等待执行环境的调用
+	var formValidation = {
+	    isEmpty: function isEmpty(val, errorMsg) {
+	        if (val === '') {
+	            return errorMsg;
+	        }
+	    },
+	    hasSpace: function hasSpace(val, errorMsg) {
+	        if (/\s/g.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    minLength: function minLength(val, length, errorMsg) {
+	        if (val.length < length) {
+	            return errorMsg;
+	        }
+	    },
+	    maxLength: function maxLength(val, length, errorMsg) {
+	        if (val.length > length) {
+	            return errorMsg;
+	        }
+	    },
+	    mustLetterHead: function mustLetterHead(val, errorMsg) {
+	        if (!/^[a-z]/i.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    isNumberHead: function isNumberHead(val, errorMsg) {
+	        if (/^\d/.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    isZeroHead: function isZeroHead(val, errorMsg) {
+	        if (/^0/.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    mustAllNum: function mustAllNum(val, errorMsg) {
+	        if (/\D/g.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    mustAllW: function mustAllW(val, errorMsg) {
+	        if (/\W/g.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    isPhoneNum: function isPhoneNum(val, errorMsg) {
+	        if (!/^1[34578][0-9]{9}$/.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    isID: function isID(val, errorMsg) {
+	        var ary = val.split('');
+	        var facAry = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+	        var tempFac = 0;
+	        for (var i = 0, l = facAry.length; i < l; i++) {
+	            tempFac += parseInt(ary[i]) * facAry[i];
+	        }
+	        tempFac = tempFac % 11;
+	        tempFac = tempFac === 10 ? 'X' : tempFac;
+	
+	        if (!/^([1[1-5]|2[1-3]|3[1-7]|4[1-6]|5[0-4]|6[1-5]])0\d{14}[\dX]$/.test(val) || tempFac != ary[17]) {
+	            return errorMsg;
+	        }
+	    },
+	    isMail: function isMail(val, errorMsg) {
+	        if (!/^[a-z][\w\.-]{3,19}@[\da-z]{2,12}\.com(\.cn)?$/i.test(val)) {
+	            return errorMsg;
+	        }
+	    },
+	    isBirth: function isBirth(val, errorMsg) {
+	        var dateArr = val.match(/\d+/g);
+	        var date = dateInfo(new Date(dateArr.join()));
+	
+	        if (!isMatch() || !isVali()) {
+	            return errorMsg;
+	        }
+	
+	        function isMatch() {
+	            return dateArr[2] == date.day;
+	        };
+	
+	        function isVali() {
+	            var newDate = dateInfo(new Date());
+	            if (newDate.year > date.year) {
+	                return true;
+	            };
+	            if (newDate.year == date.year && newDate.mon > date.mon) {
+	                return true;
+	            };
+	            if (newDate.year == date.year && newDate.mon == date.mon && newDate.day >= date.day) {
+	                return true;
+	            };
+	        };
+	        function dateInfo(date) {
+	            return {
+	                year: date.getFullYear(),
+	                mon: date.getMonth(),
+	                day: date.getDate()
+	            };
+	        };
+	    }
+	};
+	
+	/*
+	    Validator 是一个执行环境,它接收用户请求,并告知用户是否验证通过
+	    但它本身不具备验证能力, 它需要把请求委托给表单的策略类, 策略类才是真正的封装了验证算法(策略类见上面代码)
+	*/
+	
+	var Validator = function () {
+	    function Validator() {
+	        _classCallCheck(this, Validator);
+	
+	        this.domRuleCache = {};
+	        this.valueRuleCache = {};
+	    }
+	    /*
+	    *add方法负责给某个表单控件绑定验证规则, 把验证规则存到ruleCache中
+	    它支持同时一次添加多条规则到同一个dom上
+	    *rule的规则是一个数组，每个元素格式大概： {}
+	    */
+	
+	
+	    _createClass(Validator, [{
+	        key: 'addByDom',
+	        value: function addByDom(dom, name, rules) {
+	            var ary = [],
+	                self = this;
+	            for (var i = 0, rule; rule = rules[i++];) {
+	                (function (rule) {
+	                    var strategyAry = rule.strategy.split(':'),
+	                        strategy = strategyAry.shift();
+	                    strategyAry.unshift(null);
+	                    strategyAry.push(rule.errorMsg);
+	
+	                    ary.push(function () {
+	                        strategyAry[0] = dom.value;
+	                        return formValidation[strategy].apply(self, strategyAry);
+	                    });
+	                })(rule);
+	            }
+	            this.domRuleCache[name] = ary;
+	        }
+	    }, {
+	        key: 'addByValue',
+	        value: function addByValue(name, rules) {
+	            var ary = [],
+	                self = this;
+	            for (var i = 0, rule; rule = rules[i++];) {
+	                (function (rule) {
+	                    var strategyAry = rule.strategy.split(':'),
+	                        strategy = strategyAry.shift();
+	                    strategyAry.unshift(null);
+	                    strategyAry.push(rule.errorMsg);
+	
+	                    ary.push(function (value) {
+	                        strategyAry[0] = value;
+	                        return formValidation[strategy].apply(self, strategyAry);
+	                    });
+	                })(rule);
+	            }
+	            this.valueRuleCache[name] = ary;
+	        }
+	        /*
+	        valiOne方法对某个表单提交的值进行验证,
+	        它需要传入一个name,来取出对应的验证规则
+	        如果值不合法, 返回对应的错误信息
+	        */
+	
+	    }, {
+	        key: 'valiOneByDom',
+	        value: function valiOneByDom(name) {
+	            for (var i = 0, fn; fn = this.domRuleCache[name][i++];) {
+	                var msg = fn();
+	                if (msg) {
+	                    return msg;
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'valiOneByValue',
+	        value: function valiOneByValue(name, value) {
+	            var cb = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+	
+	            for (var i = 0, fn; fn = this.valueRuleCache[name][i++];) {
+	                var msg = fn(value);
+	                if (msg) {
+	                    cb(msg);
+	                    return msg;
+	                }
+	            }
+	        }
+	
+	        /*
+	        valiAll方法在此处用不到,他会遍历所有的规则进行验证,并返回错误信息
+	        比如你有一个提交按钮对整个表单进行提交,这个方法就很有用了
+	        因为是遍历所有绑定到dom上的验证规则,也就不需要传入name了
+	        */
+	
+	    }, {
+	        key: 'valiAllByDom',
+	        value: function valiAllByDom() {
+	            var msg = void 0;
+	            for (var name in this.domRuleCache) {
+	                if (msg = this.valiOneByDom(name)) {
+	                    return msg;
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'valiByValue',
+	        value: function valiByValue() {
+	            var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	            var cb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+	
+	            var msg = void 0;
+	            for (var name in data) {
+	                if (msg = this.valiOneByValue(name, data[name])) {
+	
+	                    cb(name, msg);
+	                };
+	            }
+	        }
+	    }]);
+	
+	    return Validator;
+	}();
+	
+	exports.default = Validator;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+	// removed by extract-text-webpack-plugin
+	module.exports = {"section":"section_1KHhTpvaJO","header":"header_19nhw5IGOY","form":"form_2Ukg1LfuJC"};
+
+/***/ },
+/* 15 */
 /***/ function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 	module.exports = {"section":"section_2b3dbWFRKE"};
 
 /***/ },
-/* 12 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(13);
+	module.exports = __webpack_require__(17);
 
 /***/ },
-/* 13 */
+/* 17 */
 /***/ function(module, exports) {
 
 	/*!
@@ -2786,18 +3610,18 @@
 
 
 /***/ },
-/* 14 */
+/* 18 */
 /***/ function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ },
-/* 15 */,
-/* 16 */,
-/* 17 */,
-/* 18 */,
 /* 19 */,
-/* 20 */
-14
+/* 20 */,
+/* 21 */,
+/* 22 */,
+/* 23 */,
+/* 24 */
+18
 /******/ ])));
 //# sourceMappingURL=index.js.map
